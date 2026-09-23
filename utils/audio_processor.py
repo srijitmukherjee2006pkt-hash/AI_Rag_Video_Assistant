@@ -1,8 +1,10 @@
 import os
 import re
+import tempfile
 from urllib.parse import parse_qs, urlparse
 from pydub import AudioSegment
 import yt_dlp
+import streamlit as st
 
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
@@ -28,6 +30,23 @@ def download_youtube_audio(url: str) -> str:
     clean_url = sanitize_youtube_url(url)
     output_template = os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s")
 
+    # Read cookies from Streamlit secrets if present
+    cookie_path = None
+    if hasattr(st, "secrets") and "YOUTUBE_COOKIES" in st.secrets:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as f:
+            f.write(st.secrets["YOUTUBE_COOKIES"])
+            cookie_path = f.name
+
+    ydl_opts = {
+        "format": "bestaudio/best",
+        "outtmpl": output_template,
+        "noplaylist": True,
+        "cookiefile": cookie_path,  # <--- ADD THIS LINE
+        "postprocessors": [
+            # ... keep your existing postprocessors here ...
+        ]
+    }
+
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": output_template,
@@ -47,19 +66,22 @@ def download_youtube_audio(url: str) -> str:
         "quiet": False,
         "no_warnings": False,
     }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(clean_url, download=True)
+            if "entries" in info and info["entries"]:
+                 info = info["entries"][0]
+            video_id = info.get("id")
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(clean_url, download=True)
-        if "entries" in info and info["entries"]:
-            info = info["entries"][0]
-        video_id = info.get("id")
+        wav_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.wav")
 
-    wav_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.wav")
+        if not os.path.exists(wav_path):
+            raise FileNotFoundError(f"Expected converted audio at {wav_path}, but file was not found.")
 
-    if not os.path.exists(wav_path):
-        raise FileNotFoundError(f"Expected converted audio at {wav_path}, but file was not found.")
-
-    return normalize_audio(wav_path)
+        return normalize_audio(wav_path)
+    finally:
+        if cookie_path and os.path.exists(cookie_path):
+            os.remove(cookie_path)
 
 
 def normalize_audio(input_path: str) -> str:
