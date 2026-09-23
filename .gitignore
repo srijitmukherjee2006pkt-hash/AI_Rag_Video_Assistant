@@ -1,0 +1,30 @@
+# Environment variables and secrets
+.env
+
+# Virtual environment (from your terminal path)
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Media downloads and temporary processing files
+downloads/
+*.wav
+*.mp3
+*.mp4
+
+# Vector database local storage
+vector_db/
+
+# Local testing and scratch files
+test.py
+test1.py
+
+# OS / Editor clutter
+.DS_Store
+Thumbs.db
+.vscode/
