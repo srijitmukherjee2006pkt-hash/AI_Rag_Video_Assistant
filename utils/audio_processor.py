@@ -41,16 +41,7 @@ def download_youtube_audio(url: str) -> str:
         "format": "bestaudio/best",
         "outtmpl": output_template,
         "noplaylist": True,
-        "cookiefile": cookie_path,  # <--- ADD THIS LINE
-        "postprocessors": [
-            # ... keep your existing postprocessors here ...
-        ]
-    }
-
-    ydl_opts = {
-        "format": "bestaudio/best",
-        "outtmpl": output_template,
-        "noplaylist": True,
+        "cookiefile": cookie_path, 
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",
@@ -66,6 +57,9 @@ def download_youtube_audio(url: str) -> str:
         "quiet": False,
         "no_warnings": False,
     }
+
+    st.warning(f"Did cookies load successfully? {cookie_path is not None}")
+
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(clean_url, download=True)
