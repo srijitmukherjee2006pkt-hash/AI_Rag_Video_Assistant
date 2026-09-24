@@ -5,6 +5,9 @@ from urllib.parse import parse_qs, urlparse
 from pydub import AudioSegment
 import yt_dlp
 import streamlit as st
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
@@ -42,6 +45,7 @@ def download_youtube_audio(url: str) -> str:
         "outtmpl": output_template,
         "noplaylist": True,
         "cookiefile": cookie_path, 
+        "proxy": os.getenv("YTDLP_PROXY"),
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",
