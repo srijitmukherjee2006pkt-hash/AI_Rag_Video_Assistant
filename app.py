@@ -17,6 +17,16 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+hide_st_style = """
+    <style>
+    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    [data-testid="stToolbar"] {visibility: hidden !important;}
+    footer {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
 # ─── Custom CSS ─────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
